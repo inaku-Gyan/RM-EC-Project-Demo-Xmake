@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# IDEs and editors
+*.swp
+*.swo
+.idea
+.vscode/*
+
+
+# For STM32CubeMX generated files
+/bsp/CubeMX/build/
+# 我们不使用 STM32CubeMX 生成的 Makefile，所以忽略它
+/bsp/CubeMX/Makefile
+
+
+
