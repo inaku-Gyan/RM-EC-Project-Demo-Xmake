@@ -18,13 +18,13 @@ public:
         const T derivative = (err - prev_err_) / dt;
         prev_err_          = err;
 
-        T out = kp_ * err + ki_ * integral_ + kd_ * derivative;
+        T out = (kp_ * err) + (ki_ * integral_) + (kd_ * derivative);
 
         // 钳位输出，并在饱和方向继续吃误差时回退积分，防止 wind-up。
         const T sat = (out > limit_) ? T{1} : (out < -limit_ ? T{-1} : T{0});
         if (sat != T{0}) {
             out = sat * limit_;
-            if (err * sat > T{0}) integral_ -= err * dt;
+            if (err * sat > T{0}) { integral_ -= err * dt; }
         }
         return out;
     }

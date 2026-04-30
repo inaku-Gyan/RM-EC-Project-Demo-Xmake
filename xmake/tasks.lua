@@ -134,6 +134,7 @@ task("lint")
             -- --fix-errors 同时处理含错误级别诊断的修复
             table.insert(args, "--fix")
             table.insert(args, "--fix-errors")
+            table.insert(args, "--fix-notes")
         end
         local code = os.execv("clang-tidy", table.join(args, files), {try = true})
         if code ~= 0 then
