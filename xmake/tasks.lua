@@ -65,8 +65,9 @@ task("lint")
             return
         end
 
-        local dbpath = path.join(os.projectdir(), "build")
-        if not os.isdir(dbpath) or not os.isfile(path.join(dbpath, "compile_commands.json")) then
+        -- xmake project -k compile_commands 默认输出到项目根（与 .clangd 约定一致）
+        local dbpath = os.projectdir()
+        if not os.isfile(path.join(dbpath, "compile_commands.json")) then
             raise("编译数据库不存在，请先运行：xmake project -k compile_commands")
         end
 
@@ -76,7 +77,14 @@ task("lint")
             table.insert(args, "--fix")
             table.insert(args, "--fix-errors")
         end
-        os.execv("clang-tidy", table.join(args, files))
+        local code = os.execv("clang-tidy", table.join(args, files), {try = true})
+        if code ~= 0 then
+            if option.get("check") then
+                raise("静态检查未通过，请运行 `xmake lint` 自动修复或人工处理")
+            else
+                raise("clang-tidy 退出码 %d", code)
+            end
+        end
     end)
 task_end()
 

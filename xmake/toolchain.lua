@@ -11,6 +11,11 @@
 toolchain("arm-none-eabi")
     set_kind("cross")
 
+    -- xmake 在某些命令路径（如 xmake project）下要求 toolchain 显式 check
+    -- 通过后才会被 load。返回 true 表示我们自己负责在 on_load 里定位工具链，
+    -- 不依赖 xmake 的标准探测流程。
+    on_check(function() return true end)
+
     on_load(function(toolchain)
         local prefix = "arm-none-eabi-"
 

@@ -9,6 +9,12 @@ local TARGET = "ec_demo"
 
 set_project("ec-demo")
 set_version("0.1.0")
+
+-- 项目默认平台/架构/模式：跨平台编译到 ARM Cortex-M4，发布构建。
+-- 设置后无需手动 `xmake f -p cross -a arm`，xmake 不会再自动检测 host 平台
+-- （否则会回落到 mingw/msvc，导致工具链解析失败）。
+set_defaultplat("cross")
+set_defaultarchs("arm")
 set_defaultmode("release")
 
 set_toolchains("arm-none-eabi")
