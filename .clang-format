@@ -28,19 +28,20 @@ BreakBeforeBinaryOperators: NonAssignment
 
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: Inline
-AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: OnlyFirstIf
 AllowShortLoopsOnASingleLine: true
 
-# 函数参数列表
+# 函数
 
+BreakAfterAttributes: Always
 BinPackArguments: false
 BinPackParameters: false
 AlignAfterOpenBracket: BlockIndent
 
 # 大括号风格
 
-BreakBeforeBraces: Linux
+BreakBeforeBraces: Attach
 
 # class 初始化列表、继承列表
 
