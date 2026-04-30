@@ -36,7 +36,7 @@ EC-Project-Demo/
 │       ├── comm_task.cpp
 │       └── monitor_task.cpp
 └── lib/
-    └── ec-lib/                # 跨项目共享中间件（Git submodule）
+    └── ecx/                   # 跨项目共享中间件（Git submodule）
         ├── rtos/              # FreeRTOS 类型安全薄封装
         ├── algo/              # PID、滤波器模板
         └── proto/             # COBS、CRC
@@ -51,7 +51,7 @@ EC-Project-Demo/
 | `bsp/CubeMX/`     | CubeMX 生成  | 只改 USER CODE 段；重新配置外设时用 CubeMX 重新生成 |
 | `bsp/interface.h` | 手写         | 声明所有 CubeMX 可调用的 C++ 函数                   |
 | `src/`            | 手写         | 自由修改                                            |
-| `lib/ec-lib/`     | 自研共享库   | 在 submodule 的独立 repo 里修改，本项目只消费       |
+| `lib/ecx/`        | 自研共享库   | 在 submodule 的独立 repo 里修改，本项目只消费       |
 | ETL 等第三方      | xmake 包管理 | xmake lock 文件锁定版本                             |
 
 ---
@@ -117,7 +117,7 @@ void usb_cdc_tx_cplt(void);
 src/tasks/      应用层：任务逻辑、状态机（与本机器人强绑定）
 src/comm/       通信层：USB CDC 双缓冲、协议编解码
 src/driver/     驱动层：具体设备驱动（DJI 电机、IMU 等）
-lib/ec-lib/     共享层：RTOS 封装、算法模板、协议工具（跨项目）
+lib/ecx/     共享层：RTOS 封装、算法模板、协议工具（跨项目）
 bsp/CubeMX/     BSP 层：外设初始化、HAL、FreeRTOS、USB 栈（只读）
 ```
 
@@ -175,7 +175,7 @@ add_cxflags("-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard", "-mthumb
 
 ## 代码规范（fmt / lint）
 
-**作用范围：`src/` 和 `lib/ec-lib/`，`bsp/` 和第三方库完全排除。**
+**作用范围：`src/` 和 `lib/ecx/`，`bsp/` 和第三方库完全排除。**
 
 `.clang-format`：基于 Google style，ColumnLimit 100，IndentWidth 4，PointerAlignment Left。
 
@@ -208,9 +208,9 @@ add_cxflags("-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard", "-mthumb
 
 ---
 
-## ec-lib 边界
+## ecx 边界
 
-**放入 ec-lib**（与具体机器人无关，可跨项目复用）：
+**放入 ecx**（与具体机器人无关，可跨项目复用）：
 
 - `rtos/`：`Queue<T,N>`、`Semaphore`（FreeRTOS 的类型安全 inline 封装）
 - `algo/`：`Pid<T>`、`LowPassFilter<T>`
