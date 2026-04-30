@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <cstdint>
 #include <span>
 
@@ -8,16 +9,15 @@
 namespace usb {
 
 struct RxPacket {
-    uint8_t data[64];
+    std::array<uint8_t, 64> data;
     uint32_t len;
 };
 
-// Send data over USB CDC. Blocks until the previous transfer completes,
-// then initiates a new transfer. Returns false if data exceeds the TX buffer.
+// 通过 USB CDC 发送数据。阻塞等待上一次传输完成后再发起新传输。
+// data 超过 TX 缓冲区大小时返回 false。
 bool send(std::span<const uint8_t> data);
 
-// Block until a USB RX packet arrives (or timeout elapses).
-// Returns false on timeout.
+// 阻塞等待一个 USB RX 数据包到来（或超时）。超时返回 false。
 bool rx_receive(RxPacket& pkt, TickType_t timeout = portMAX_DELAY);
 
 }  // namespace usb
