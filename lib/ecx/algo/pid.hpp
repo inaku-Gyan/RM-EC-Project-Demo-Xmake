@@ -23,10 +23,12 @@ public:
         // Clamp output and prevent integral wind-up beyond the clamp boundary.
         if (out > limit_) {
             out = limit_;
-            if (err > T{0}) integral_ -= err * dt;
+            if (err > T{0})
+                integral_ -= err * dt;
         } else if (out < -limit_) {
             out = -limit_;
-            if (err < T{0}) integral_ -= err * dt;
+            if (err < T{0})
+                integral_ -= err * dt;
         }
         return out;
     }
@@ -36,7 +38,11 @@ public:
         prev_err_ = T{0};
     }
 
-    void set_gains(T kp, T ki, T kd) { kp_ = kp; ki_ = ki; kd_ = kd; }
+    void set_gains(T kp, T ki, T kd) {
+        kp_ = kp;
+        ki_ = ki;
+        kd_ = kd;
+    }
 
 private:
     T kp_, ki_, kd_, limit_;

@@ -15,10 +15,11 @@ namespace ecx::proto {
 //   Returns the decoded payload length, or 0 on framing error.
 
 [[nodiscard]] inline size_t cobs_encode(std::span<const uint8_t> src, std::span<uint8_t> dst) {
-    if (dst.size() < src.size() + 2) return 0;
+    if (dst.size() < src.size() + 2)
+        return 0;
 
-    size_t write = 1;         // position of the current overhead byte
-    size_t code_pos = 0;      // index of the last overhead byte written
+    size_t write = 1;     // position of the current overhead byte
+    size_t code_pos = 0;  // index of the last overhead byte written
     uint8_t code = 1;
 
     for (const uint8_t b : src) {
@@ -44,17 +45,20 @@ namespace ecx::proto {
 }
 
 [[nodiscard]] inline size_t cobs_decode(std::span<const uint8_t> src, std::span<uint8_t> dst) {
-    if (src.empty() || dst.size() < src.size()) return 0;
+    if (src.empty() || dst.size() < src.size())
+        return 0;
 
     size_t read = 0;
     size_t write = 0;
 
     while (read < src.size()) {
         const uint8_t code = src[read++];
-        if (code == 0) return 0;  // unexpected zero (framing error)
+        if (code == 0)
+            return 0;  // unexpected zero (framing error)
 
         for (uint8_t i = 1; i < code; ++i) {
-            if (read >= src.size()) return 0;
+            if (read >= src.size())
+                return 0;
             dst[write++] = src[read++];
         }
         if (code < 0xFF && read < src.size()) {

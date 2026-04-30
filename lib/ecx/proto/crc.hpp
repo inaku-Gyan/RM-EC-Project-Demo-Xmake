@@ -15,7 +15,8 @@ namespace ecx::proto {
 
 [[nodiscard]] inline uint16_t crc16(std::span<const uint8_t> data) {
     uint16_t crc = 0xFFFFu;
-    for (uint8_t b : data) crc = crc16_update(crc, b);
+    for (uint8_t b : data)
+        crc = crc16_update(crc, b);
     return crc;
 }
 

@@ -12,9 +12,7 @@ namespace ecx::rtos {
 template <typename T, size_t N>
 class Queue {
 public:
-    Queue() {
-        handle_ = xQueueCreateStatic(N, sizeof(T), buf_, &storage_);
-    }
+    Queue() { handle_ = xQueueCreateStatic(N, sizeof(T), buf_, &storage_); }
 
     // Send from task context. Returns true on success.
     bool send(const T& item, TickType_t timeout = 0) const {
