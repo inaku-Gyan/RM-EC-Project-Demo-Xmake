@@ -41,7 +41,7 @@ target(TARGET)
     set_kind("binary")
     set_languages("cxx20", "c11")
 
-    add_files("src/**.cpp")
+    add_files("src/**.cpp", "lib/ecx/**.cpp")
 
     -- Project root for "bsp/interface.h", lib/ecx headers, and src-relative includes
     add_includedirs(".", "lib/ecx", "src")
