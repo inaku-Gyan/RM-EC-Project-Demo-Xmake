@@ -20,6 +20,8 @@ target("cubemx")
 
     cubemx_add_files()
     cubemx_add_includes(true)
+    -- Project root needed so CubeMX USER CODE can include "bsp/interface.h"
+    add_includedirs(".", {public = false})
 target_end()
 
 -- ─── Main application ─────────────────────────────────────────────────────────
@@ -44,7 +46,7 @@ target("ec_demo")
     add_ldflags("-T" .. path.join(os.projectdir(), "bsp/CubeMX/STM32F407XX_FLASH.ld"), {force = true})
 
     -- Map file for size analysis
-    add_ldflags("-Wl,-Map=$(buildir)/ec_demo.map,--cref", {force = true})
+    add_ldflags("-Wl,-Map=$(builddir)/ec_demo.map,--cref", {force = true})
 
     -- LTO in release mode for smaller/faster binary
     if is_mode("release") then

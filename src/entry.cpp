@@ -27,8 +27,7 @@ extern "C" void user_init() {
 }
 
 extern "C" void user_error_handler() {
-    __disable_irq();
-    // Trap here — attach a debugger or observe the stuck state.
+    __asm volatile("CPSID I" : : : "memory");
     for (;;) {}
 }
 

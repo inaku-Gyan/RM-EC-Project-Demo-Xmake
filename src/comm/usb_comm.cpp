@@ -8,6 +8,9 @@ extern "C" {
 #include "semphr.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
+
+// Defined in usb_device.c; not re-exported by usb_device.h.
+extern USBD_HandleTypeDef hUsbDeviceFS;
 }
 
 namespace usb {
