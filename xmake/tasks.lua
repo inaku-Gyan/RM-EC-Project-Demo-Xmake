@@ -52,12 +52,20 @@ task("lint")
     }
     on_run(function()
         import("core.base.option")
+        import("core.project.config")
+        import("core.project.project")
         local C = import("projcfg", {anonymous = true}).get()
 
+        -- 只把源文件（.cpp/.c）喂给 clang-tidy；头文件没有自己的 compile command，
+        -- 单独传会用默认 -std= 解析（C++20 特性如 <concepts>/<span> 会失败）。
+        -- 头文件通过 .clang-tidy 的 HeaderFilterRegex 在被 .cpp 包含时一并检查。
         local files = {}
         for _, pat in ipairs(C.user_globs) do
-            for _, f in ipairs(os.files(path.join(os.projectdir(), pat))) do
-                table.insert(files, f)
+            local ext = pat:match("%.([^%.]+)$")
+            if ext == "cpp" or ext == "c" then
+                for _, f in ipairs(os.files(path.join(os.projectdir(), pat))) do
+                    table.insert(files, f)
+                end
             end
         end
         if #files == 0 then
@@ -71,7 +79,57 @@ task("lint")
             raise("编译数据库不存在，请先运行：xmake project -k compile_commands")
         end
 
+        -- ── 注入交叉编译工具链的内置 include 路径 ─────────────────────────────
+        -- clang-tidy 用 libclang 解析源文件，但不知道 arm-none-eabi-g++ 的内置
+        -- 头文件目录（C/C++ stdlib）。不注入会得到一堆 "'cstdint' file not found"
+        -- 之类的 clang-diagnostic-error，并连带触发 enum-size 等基于 AST 的
+        -- 误报（因为 uint8_t 未声明，enum 退化成 int）。
+        -- 做法：从 xmake 已配置的 binary target 拿到工具链路径，跑
+        -- g++ -E -v 解析 "#include <...> search starts here:" 段。
+        -- 等价于 clangd 的 --query-driver。
+        config.load()
+        local extra_args = {}
+        local sdkdir
+        for _, t in pairs(project.targets()) do
+            if t:kind() == "binary" then
+                for _, tc in ipairs(t:toolchains()) do
+                    sdkdir = tc:config("sdkdir") or tc:sdkdir()
+                    if sdkdir then break end
+                end
+                break
+            end
+        end
+        if sdkdir then
+            local cxx = path.join(sdkdir, "bin",
+                "arm-none-eabi-g++" .. (is_host("windows") and ".exe" or ""))
+            if os.isexec(cxx) then
+                local null_dev = is_host("windows") and "NUL" or "/dev/null"
+                local _, errdata = os.iorunv(cxx,
+                    {"-E", "-x", "c++", "-v", null_dev}, {try = true})
+                if errdata then
+                    local in_section = false
+                    for line in errdata:gmatch("[^\r\n]+") do
+                        if line:find("End of search list", 1, true) then
+                            in_section = false
+                        elseif in_section then
+                            local p = line:gsub("^%s+", ""):gsub("%s+$", "")
+                            if p ~= "" then
+                                table.insert(extra_args,
+                                    "--extra-arg=-isystem" .. p)
+                            end
+                        elseif line:find("#include <...> search starts here",
+                                         1, true) then
+                            in_section = true
+                        end
+                    end
+                end
+            end
+        end
+
         local args = {"-p", dbpath}
+        for _, a in ipairs(extra_args) do
+            table.insert(args, a)
+        end
         if not option.get("check") then
             -- --fix-errors 同时处理含错误级别诊断的修复
             table.insert(args, "--fix")
