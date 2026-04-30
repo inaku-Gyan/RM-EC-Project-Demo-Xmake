@@ -1,5 +1,6 @@
 includes("xmake/toolchain.lua")
 includes("xmake/cubemx.lua")
+includes("xmake/tasks.lua")
 
 set_project("ec-demo")
 set_version("0.1.0")
@@ -53,6 +54,13 @@ target("ec_demo")
         add_cflags("-flto")
         add_cxxflags("-flto")
         add_ldflags("-flto")
+    end
+
+    -- Debug 模式：-Og 比 -O0 更适合嵌入式（节省 Flash），-g 保留调试符号
+    if is_mode("debug") then
+        add_defines("DEBUG")
+        add_cflags("-Og", "-g", {force = true})
+        add_cxxflags("-Og", "-g", {force = true})
     end
 
     -- Post-build: generate .hex/.bin and print section sizes
