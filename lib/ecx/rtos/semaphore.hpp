@@ -9,8 +9,9 @@ class BinarySemaphore {
 public:
     explicit BinarySemaphore(bool initial_state = false) {
         handle_ = xSemaphoreCreateBinaryStatic(&storage_);
-        if (initial_state)
+        if (initial_state) {
             xSemaphoreGive(handle_);
+}
     }
 
     bool take(TickType_t timeout = portMAX_DELAY) {

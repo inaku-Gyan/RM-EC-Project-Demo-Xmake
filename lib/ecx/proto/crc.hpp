@@ -8,7 +8,7 @@ namespace ecx::proto {
 [[nodiscard]] constexpr uint16_t crc16_update(uint16_t crc, uint8_t byte) {
     crc ^= static_cast<uint16_t>(byte) << 8;
     for (int i = 0; i < 8; ++i) {
-        crc = (crc & 0x8000u) ? ((crc << 1) ^ 0x1021u) : (crc << 1);
+        crc = (crc & 0x8000U) ? ((crc << 1) ^ 0x1021U) : (crc << 1);
     }
     return crc;
 }

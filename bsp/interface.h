@@ -9,7 +9,7 @@ extern "C" {
 
 void user_init(void);
 void user_error_handler(void);
-void user_assert_failed(uint8_t* file, uint32_t line);
+void user_assert_failed(const uint8_t* file, uint32_t line);
 
 void usb_cdc_init_rx(void);
 void usb_cdc_rx_handler(uint8_t* buf, uint32_t len);

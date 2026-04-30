@@ -31,7 +31,7 @@ extern "C" void user_error_handler() {
     }
 }
 
-extern "C" void user_assert_failed(uint8_t* file, uint32_t line) {
+extern "C" void user_assert_failed(const uint8_t* file, uint32_t line) {
     (void)file;
     (void)line;
     user_error_handler();
