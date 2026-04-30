@@ -88,6 +88,45 @@ task("lint")
     end)
 task_end()
 
+-- ─── distclean ───────────────────────────────────────────────────────────────
+-- 比 xmake 内置 clean 更彻底：清掉所有构建产物和构建状态。
+-- 默认保留 compile_commands.json 和 .cache/（clangd 索引）—— 它们是 IDE
+-- 开发体验数据，与磁盘上的 .o/.elf 没耦合，删了只是徒增"重建索引"成本。
+-- 用 --all 可以连同它们一起清掉，恢复到接近首次 clone 的状态。
+task("distclean")
+    set_menu {
+        usage       = "xmake distclean [-a|--all]",
+        description = "清理构建产物：build/、.xmake/（--all 同时清 compile_commands.json 和 .cache/）",
+        options = {
+            {'a', "all", "k", nil, "更彻底：连 compile_commands.json 和 .cache/（clangd 索引）一起删"},
+        },
+    }
+    on_run(function()
+        import("core.base.option")
+        local targets = {"build", ".xmake"}
+        if option.get("all") then
+            table.insert(targets, "compile_commands.json")
+            table.insert(targets, ".cache")
+        end
+        local removed = {}
+        for _, rel in ipairs(targets) do
+            local abs = path.join(os.projectdir(), rel)
+            if os.exists(abs) then
+                os.tryrm(abs)
+                table.insert(removed, rel)
+            end
+        end
+        if #removed == 0 then
+            print("已是干净状态")
+        else
+            cprint("${green}已清理：${clear}")
+            for _, p in ipairs(removed) do
+                cprint("  - %s", p)
+            end
+        end
+    end)
+task_end()
+
 -- ─── flash ────────────────────────────────────────────────────────────────────
 -- 通过 OpenOCD 烧录固件。探针配置来自 xmake/projcfg.lua 的 openocd_cfg_dir。
 -- binary target 名称通过 project.targets() 动态获取，无需硬编码。
