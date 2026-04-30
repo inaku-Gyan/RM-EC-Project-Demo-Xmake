@@ -148,9 +148,10 @@ task("flash")
             raise("探针配置不存在：%s\n支持的探针：stlink | cmsis-dap | jlink", cfgfile)
         end
 
-        -- OpenOCD 在 Windows 下需要正斜杠；Tcl {} 引用处理路径中的空格
-        local hexpath = hexfile:gsub("\\", "/")
-        local cfgpath = cfgfile:gsub("\\", "/")
+        -- OpenOCD 在 Windows 下需要正斜杠（哪怕是 Windows 平台）；
+        -- Tcl {} 引用处理路径中的空格。path.unix() 强制转成正斜杠。
+        local hexpath = path.unix(hexfile)
+        local cfgpath = path.unix(cfgfile)
 
         -- ── 组装 OpenOCD 参数 ────────────────────────────────────────────────
         local args = {}
