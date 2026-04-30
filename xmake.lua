@@ -2,6 +2,11 @@ includes("xmake/toolchain.lua")
 includes("xmake/cubemx.lua")
 includes("xmake/tasks.lua")
 
+add_moduledirs("xmake")
+
+-- target 名称在本文件内的唯一定义；tasks.lua 通过 project.targets() 动态读取，无需重复
+local TARGET = "ec_demo"
+
 set_project("ec-demo")
 set_version("0.1.0")
 set_defaultmode("release")
@@ -26,7 +31,7 @@ target("cubemx")
 target_end()
 
 -- ─── Main application ─────────────────────────────────────────────────────────
-target("ec_demo")
+target(TARGET)
     set_kind("binary")
     set_languages("cxx20", "c11")
 
@@ -47,7 +52,7 @@ target("ec_demo")
     add_ldflags("-T" .. path.join(os.projectdir(), "bsp/CubeMX/STM32F407XX_FLASH.ld"), {force = true})
 
     -- Map file for size analysis
-    add_ldflags("-Wl,-Map=$(builddir)/ec_demo.map,--cref", {force = true})
+    add_ldflags("-Wl,-Map=$(builddir)/" .. TARGET .. ".map,--cref", {force = true})
 
     -- LTO in release mode for smaller/faster binary
     if is_mode("release") then
