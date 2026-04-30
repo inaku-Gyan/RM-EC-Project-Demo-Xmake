@@ -8,34 +8,54 @@ ContinuationIndentWidth: 4
 AccessModifierOffset: -4
 ConstructorInitializerIndentWidth: 4
 
+# 指针和引用的对齐方式
+
 PointerAlignment: Left
 ReferenceAlignment: Left
 
-AlignConsecutiveAssignments: false
-AlignConsecutiveDeclarations: false
-AlignOperands: true
+# 对齐连续的赋值、声明、操作数和注释
+
+AlignConsecutiveAssignments: AcrossComments
+AlignConsecutiveDeclarations: AcrossComments
 AlignTrailingComments: true
 
-AllowShortBlocksOnASingleLine: Never
-AllowShortCaseLabelsOnASingleLine: false
+# 操作数对齐和换行
+
+AlignOperands: Align
+BreakBeforeBinaryOperators: NonAssignment
+
+# 短语句换行
+
+AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Inline
-AllowShortIfStatementsOnASingleLine: Never
-AllowShortLoopsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLoopsOnASingleLine: true
+
+# 函数参数列表
 
 BinPackArguments: false
 BinPackParameters: false
+AlignAfterOpenBracket: BlockIndent
 
-BreakBeforeBraces: Attach
-BreakBeforeBinaryOperators: None
+# 大括号风格
+
+BreakBeforeBraces: Linux
+
+# class 初始化列表、继承列表
+
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
 
+# include 排序
+
 IncludeBlocks: Regroup
-SortIncludes: CaseInsensitive
+SortIncludes: CaseSensitive
+
+# 空格出现位置
 
 SpaceAfterCStyleCast: false
 SpaceBeforeParens: ControlStatements
 SpacesInAngles: Never
-SpacesInContainerLiterals: false
 
 UseTab: Never
