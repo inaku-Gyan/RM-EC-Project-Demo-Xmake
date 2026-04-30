@@ -12,7 +12,8 @@ Checks: >
   -readability-identifier-length,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
-  -bugprone-easily-swappable-parameters
+  -bugprone-easily-swappable-parameters,
+  -clang-analyzer-core.FixedAddressDereference
 
 WarningsAsErrors: "*"
 

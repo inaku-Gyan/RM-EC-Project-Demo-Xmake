@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <cstddef>
 #include <cstdint>
 
@@ -12,7 +13,7 @@ namespace ecx::rtos {
 template <typename T, size_t N>
 class Queue {
 public:
-    Queue() { handle_ = xQueueCreateStatic(N, sizeof(T), buf_, &storage_); }
+    Queue() { handle_ = xQueueCreateStatic(N, sizeof(T), buf_.data(), &storage_); }
 
     // Send from task context. Returns true on success.
     bool send(const T& item, TickType_t timeout = 0) const {
@@ -35,7 +36,7 @@ public:
     }
 
 private:
-    alignas(T) uint8_t buf_[N * sizeof(T)];
+    alignas(T) std::array<uint8_t, N * sizeof(T)> buf_{};
     StaticQueue_t storage_;
     QueueHandle_t handle_;
 };

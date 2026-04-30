@@ -1,3 +1,5 @@
+#include <array>
+
 #include "FreeRTOS.h"
 #include "bsp/interface.h"
 #include "task.h"
@@ -13,16 +15,19 @@ StaticTask_t s_comm_tcb;
 StaticTask_t s_control_tcb;
 StaticTask_t s_monitor_tcb;
 
-StackType_t s_comm_stack[512];
-StackType_t s_control_stack[256];
-StackType_t s_monitor_stack[256];
+std::array<StackType_t, 512> s_comm_stack;
+std::array<StackType_t, 256> s_control_stack;
+std::array<StackType_t, 256> s_monitor_stack;
 
 }  // namespace
 
 extern "C" void user_init() {
-    xTaskCreateStatic(comm_task, "comm", 512, nullptr, 3, s_comm_stack, &s_comm_tcb);
-    xTaskCreateStatic(control_task, "ctrl", 256, nullptr, 4, s_control_stack, &s_control_tcb);
-    xTaskCreateStatic(monitor_task, "mon", 256, nullptr, 2, s_monitor_stack, &s_monitor_tcb);
+    xTaskCreateStatic(comm_task, "comm", s_comm_stack.size(), nullptr, 3, s_comm_stack.data(),
+                      &s_comm_tcb);
+    xTaskCreateStatic(control_task, "ctrl", s_control_stack.size(), nullptr, 4,
+                      s_control_stack.data(), &s_control_tcb);
+    xTaskCreateStatic(monitor_task, "mon", s_monitor_stack.size(), nullptr, 2,
+                      s_monitor_stack.data(), &s_monitor_tcb);
 }
 
 extern "C" void user_error_handler() {
