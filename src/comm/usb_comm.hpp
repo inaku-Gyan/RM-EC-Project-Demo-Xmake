@@ -6,8 +6,7 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
-namespace usb
-{
+namespace usb {
 
 struct RxPacket {
     std::array<uint8_t, 64> data;

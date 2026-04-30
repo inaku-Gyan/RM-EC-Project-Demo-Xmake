@@ -3,8 +3,7 @@
 #include <cstdint>
 #include <span>
 
-namespace ecx::proto
-{
+namespace ecx::proto {
 
 // Consistent Overhead Byte Stuffing (COBS).
 //
@@ -15,8 +14,8 @@ namespace ecx::proto
 // decode: decodes one COBS frame (without the trailing 0x00) from src into dst.
 //   Returns the decoded payload length, or 0 on framing error.
 
-[[nodiscard]] inline size_t cobs_encode(std::span<const uint8_t> src, std::span<uint8_t> dst)
-{
+[[nodiscard]]
+inline size_t cobs_encode(std::span<const uint8_t> src, std::span<uint8_t> dst) {
     if (dst.size() < src.size() + 2) return 0;
 
     size_t  write    = 1;  // position of the current overhead byte
@@ -45,8 +44,8 @@ namespace ecx::proto
     return write;
 }
 
-[[nodiscard]] inline size_t cobs_decode(std::span<const uint8_t> src, std::span<uint8_t> dst)
-{
+[[nodiscard]]
+inline size_t cobs_decode(std::span<const uint8_t> src, std::span<uint8_t> dst) {
     if (src.empty() || dst.size() < src.size()) return 0;
 
     size_t read  = 0;
