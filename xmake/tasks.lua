@@ -126,7 +126,10 @@ task("lint")
             end
         end
 
-        local args = {"-p", dbpath}
+        -- --quiet 关掉 clang-tidy 自己的 per-file "[N/M] Processing..." 进度行；
+        -- 实际诊断不受影响。剩下的 "Suppressed ... warnings" / "Use -header-filter ..."
+        -- / "N warnings treated as errors" 等纯统计行没有 flag 可关，下面捕获后过滤。
+        local args = {"-p", dbpath, "--quiet"}
         for _, a in ipairs(extra_args) do
             table.insert(args, a)
         end
@@ -136,13 +139,59 @@ task("lint")
             table.insert(args, "--fix-errors")
             table.insert(args, "--fix-notes")
         end
-        local code = os.execv("clang-tidy", table.join(args, files), {try = true})
-        if code ~= 0 then
+
+        cprint("正在运行 clang-tidy（%d 个用户源文件）...", #files)
+        -- stdout 和 stderr 分别落盘：clang-tidy 把诊断和进度写到不同 stream，
+        -- 同时重定向到一个文件会被 OS 字节级交错，劈裂行内容。
+        local tmpdir = os.tmpdir()
+        local outfile = path.join(tmpdir, "xmake-lint.out")
+        local errfile = path.join(tmpdir, "xmake-lint.err")
+        os.tryrm(outfile)
+        os.tryrm(errfile)
+        local code = os.execv("clang-tidy", table.join(args, files),
+            {try = true, stdout = outfile, stderr = errfile})
+        local content = (io.readfile(outfile) or "") .. (io.readfile(errfile) or "")
+        os.tryrm(outfile)
+        os.tryrm(errfile)
+
+        -- 过滤 clang-tidy 自身的统计/进度噪声，只保留真正的诊断。
+        -- 注：--quiet 实际上不影响 "[N/M] Processing" 和 "X warnings generated"
+        -- 这两类行（前者由 main 在多文件时强制输出，后者由 libclang 诊断引擎发），
+        -- 只能在这里手动滤掉。
+        local issues = 0
+        local kept = {}
+        for line in content:gmatch("[^\r\n]+") do
+            if line:find("^Suppressed%s+%d+", 1) or
+               line:find("^Use %-header%-filter", 1) or
+               line:find("^%d+%s+warnings?%s+treated%s+as%s+errors", 1) or
+               line:find("^%[%d+/%d+%]%s+Processing", 1) or
+               line:find("^%d+%s.*generated%.?$") or
+               line:find("^Error while processing ") then
+                -- skip
+            else
+                table.insert(kept, line)
+                if line:find(":%s*error:%s") or line:find(":%s*warning:%s") then
+                    issues = issues + 1
+                end
+            end
+        end
+        if #kept > 0 then
+            io.write(table.concat(kept, "\n"))
+            io.write("\n")
+        end
+
+        if issues > 0 then
+            cprint("${color.error}发现 %d 个问题${clear}", issues)
             if option.get("check") then
                 raise("静态检查未通过，请运行 `xmake lint` 自动修复或人工处理")
             else
                 raise("clang-tidy 退出码 %d", code)
             end
+        elseif code ~= 0 then
+            -- 罕见：没解析到诊断但 clang-tidy 异常退出
+            raise("clang-tidy 退出码 %d", code)
+        else
+            cprint("${green}静态检查通过（%d 个文件，0 个问题）${clear}", #files)
         end
     end)
 task_end()
@@ -164,6 +213,7 @@ task("distclean")
         import("core.base.option")
         local targets = {"build", ".xmake"}
         if option.get("all") then
+            table.insert(targets, ".vscode/compile_commands.json")
             table.insert(targets, "compile_commands.json")
             table.insert(targets, ".cache")
         end
