@@ -3,7 +3,8 @@
 
 // Stub: 1 kHz control loop skeleton.
 // TODO: read sensor data, run PID, write actuator outputs.
-void control_task(void* /*unused*/) {
+void control_task(void* /*unused*/)
+{
     TickType_t last_wake = xTaskGetTickCount();
     for (;;) {
         // placeholder — add control logic here

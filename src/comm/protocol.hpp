@@ -1,7 +1,8 @@
 #pragma once
 #include <cstdint>
 
-namespace proto {
+namespace proto
+{
 
 enum class MsgType : uint8_t {
     Heartbeat = 0x01,

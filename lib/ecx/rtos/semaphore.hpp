@@ -2,19 +2,21 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-namespace ecx::rtos {
+namespace ecx::rtos
+{
 
 // Statically-allocated binary semaphore.
-class BinarySemaphore {
+class BinarySemaphore
+{
 public:
-    explicit BinarySemaphore(bool initial_state = false) {
+    explicit BinarySemaphore(bool initial_state = false)
+    {
         handle_ = xSemaphoreCreateBinaryStatic(&storage_);
-        if (initial_state) {
-            xSemaphoreGive(handle_);
-}
+        if (initial_state) { xSemaphoreGive(handle_); }
     }
 
-    bool take(TickType_t timeout = portMAX_DELAY) {
+    bool take(TickType_t timeout = portMAX_DELAY)
+    {
         return xSemaphoreTake(handle_, timeout) == pdTRUE;
     }
 

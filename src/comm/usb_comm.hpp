@@ -6,11 +6,12 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
-namespace usb {
+namespace usb
+{
 
 struct RxPacket {
     std::array<uint8_t, 64> data;
-    uint32_t len;
+    uint32_t                len;
 };
 
 // 通过 USB CDC 发送数据。阻塞等待上一次传输完成后再发起新传输。
