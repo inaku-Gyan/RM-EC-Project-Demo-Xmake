@@ -39,6 +39,19 @@ BinPackArguments: false
 BinPackParameters: false
 AlignAfterOpenBracket: BlockIndent
 
+# 模板
+
+AlwaysBreakTemplateDeclarations: Yes
+SpaceAfterTemplateKeyword: true
+SpacesInAngles: Never
+
+# Concepts / Requires
+
+BreakBeforeConceptDeclarations: Always
+RequiresClausePosition: OwnLine
+IndentRequiresClause: true
+RequiresExpressionIndentation: OuterScope
+
 # 大括号风格
 
 BreakBeforeBraces: Attach
@@ -57,6 +70,5 @@ SortIncludes: CaseSensitive
 
 SpaceAfterCStyleCast: false
 SpaceBeforeParens: ControlStatements
-SpacesInAngles: Never
 
 UseTab: Never
