@@ -1,54 +1,54 @@
 -- ARM Cortex-M4 cross-compiler toolchain for xmake.
 --
--- Auto-discovery order（由 find_program 统一处理）：
---   1. --sdk=<dir>  (或 xmake f --sdk=<dir>，保存在 .xmake/)
+-- 探测顺序（由 find_program 统一处理）：
+--   1. --sdk=<dir>  (xmake f --sdk=<dir>)
 --   2. arm-none-eabi-gcc 已在 PATH 上
 --   3. STM32CubeCLT / Arm GNU Toolchain 默认安装目录（Windows / Linux）
 --
 -- 在新机器上一次性配置：
---   xmake f --sdk=<path-to-GNU-tools-for-STM32>
+--   xmake f -p cross -a arm -m release [--sdk=<path-to-GNU-tools-for-STM32>]
+--
+-- on_check / on_load 协议（参考 xmake 内置 toolchains/cross/{check,load}.lua）：
+--   * on_check：在 `xmake f` 阶段被 platform:check() 调用一次。负责探测 SDK，
+--     用 toolchain:config_set() 写入结果，并必须调用 toolchain:configs_save()
+--     把 _CONFIGS 持久化到 .xmake/<host>/<arch>/cache/toolchain。漏掉
+--     configs_save() 会让结果只活在当前进程内存里，下次 build 读到空 cache。
+--   * on_load：每个 target 解析时调用，可能并发。只读 toolchain:config()
+--     的值并配置 toolset；不应做发现/持久化逻辑。
 
 toolchain("arm-none-eabi")
     set_kind("cross")
 
-    -- on_check：主线程一次性探测 SDK 并把 sdkdir 持久化到 toolchain 配置。
-    -- on_load：每个 target 解析时（可能并发）只读取已保存的 sdkdir，避免竞态。
     on_check(function(toolchain)
         import("lib.detect.find_program")
 
-        local prefix = "arm-none-eabi-"
-
-        -- 1) 显式 --sdk：xmake cross 平台内置 check 已经验证过 sdk 是否包含
-        --    交叉编译器；走到这里说明 sdkdir 有效，直接采纳即可。
         local sdkdir = toolchain:sdkdir()
-        if sdkdir and sdkdir ~= "" then
-            toolchain:config_set("sdkdir", sdkdir)
-            return true
+        if not sdkdir or sdkdir == "" then
+            local gcc = find_program("arm-none-eabi-gcc", {paths = {
+                "C:/ST/STM32CubeCLT*/GNU-tools-for-STM32/bin",
+                "D:/ST/STM32CubeCLT*/GNU-tools-for-STM32/bin",
+                "C:/Program Files/STMicroelectronics/STM32CubeCLT*/GNU-tools-for-STM32/bin",
+                "/usr/lib/gcc-arm-none-eabi*/bin",
+                "/opt/gcc-arm-none-eabi*/bin",
+                "/opt/arm-gnu-toolchain*/bin",
+                "/opt/toolchains/arm-gnu-toolchain/arm-none-eabi*/bin",
+            }})
+            if gcc then
+                -- gcc = <sdk>/bin/arm-none-eabi-gcc(.exe) → sdkdir = <sdk>
+                sdkdir = path.directory(path.directory(gcc))
+            end
         end
 
-        -- 2/3) find_program 同时搜 PATH 与候选安装目录（支持 glob）
-        local gcc = find_program(prefix .. "gcc", {paths = {
-            -- STM32CubeCLT —— Windows 常见安装位置
-            "C:/ST/STM32CubeCLT*/GNU-tools-for-STM32/bin",
-            "D:/ST/STM32CubeCLT*/GNU-tools-for-STM32/bin",
-            "C:/Program Files/STMicroelectronics/STM32CubeCLT*/GNU-tools-for-STM32/bin",
-            -- Arm GNU Toolchain —— Linux 常见路径
-            "/usr/lib/gcc-arm-none-eabi*/bin",
-            "/opt/gcc-arm-none-eabi*/bin",
-            "/opt/arm-gnu-toolchain*/bin",
-        }})
-
-        if gcc then
-            -- gcc = <sdk>/bin/arm-none-eabi-gcc(.exe) → sdkdir = <sdk>
-            sdkdir = path.directory(path.directory(gcc))
-            toolchain:config_set("sdkdir", sdkdir)
-            return true
+        if not sdkdir or sdkdir == "" then
+            cprint("${red}error:${clear} 未找到 arm-none-eabi 工具链。\n" ..
+                   "请把 arm-none-eabi-gcc 加入 PATH，或运行：\n" ..
+                   "  xmake f --sdk=<path-to-GNU-tools-for-STM32>")
+            return false
         end
 
-        cprint("${red}error:${clear} 未找到 arm-none-eabi 工具链。\n" ..
-               "请把 arm-none-eabi-gcc 加入 PATH，或运行：\n" ..
-               "  xmake f --sdk=<path-to-GNU-tools-for-STM32>")
-        return false
+        toolchain:config_set("sdkdir", sdkdir)
+        toolchain:configs_save()
+        return true
     end)
 
     on_load(function(toolchain)
